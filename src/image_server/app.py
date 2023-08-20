@@ -4,10 +4,10 @@ import sys
 from src import (ingoing_queue_name, mqtt_host, optimized_images_dir,
                  outgoing_queue_name, process_count, uploaded_images_dir)
 from src.common_stuff.mqtt_base import BaseMQTTManager
+from src.common_stuff.transport import TransportMock
 from src.image_server.compressors.pil import PIL_compressor
 from src.image_server.compressors.pil_mp import PIL_MP_compressor
 from src.image_server.server import ImageServer
-from src.common_stuff.transport import TransportMock
 
 
 def app():

@@ -1,8 +1,8 @@
 import pika
 from pika import exceptions
 
-from src.common_stuff.logger import get_logger, setup_logger
 from src.common_stuff.interfaces import Abs_mqtt_manager
+from src.common_stuff.logger import get_logger, setup_logger
 
 
 # Common parent class for both WebAPI and ImageServer
