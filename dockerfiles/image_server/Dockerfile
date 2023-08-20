@@ -11,7 +11,6 @@ ENV MQTT_HOST rabbitmq
 
 
 COPY ./src  ./src
-COPY ./main.py ./
 RUN rm /app/src/web_api/ -rf
 RUN mkdir /app/src/uploaded_images
 RUN mkdir /app/src/optimized_images
@@ -21,4 +20,4 @@ RUN pip install -r requirements_pil.txt
 
 ENV ORIG_IMG_DIR "/app/src/uploaded_images"
 ENV OPT_IMG_DIR "/app/src/optimized_images"
-CMD [ "python3", "main.py"]
+CMD [ "python3", "src/image_server/main.py"]
