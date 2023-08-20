@@ -3,9 +3,11 @@ import json
 import os
 from typing import List
 
-from fastapi import FastAPI, HTTPException, Query, Response, UploadFile
-from fastapi.responses import FileResponse
+from fastapi import (FastAPI, HTTPException, Query, Request, Response,
+                     UploadFile)
+from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 
 from src import (ingoing_queue_name, mqtt_host, optimized_images_dir,
                  outgoing_queue_name, uploaded_images_dir)
@@ -38,6 +40,12 @@ app.mount(
     StaticFiles(directory=uploaded_images_dir),
     name="static"
 )
+templates = Jinja2Templates(directory="src/web_api/templates")
+app.mount(
+    "/pictures",
+    StaticFiles(directory=optimized_images_dir),
+    name="static"
+)
 
 
 @app.post("/upload/")
@@ -67,6 +75,17 @@ async def image_upload(
         return Response(status_code=500)
     finally:
         await file.close()
+
+
+@app.get("/optimized_photos/", response_class=HTMLResponse)
+async def listing(request: Request):
+    files = os.listdir(optimized_images_dir)
+    files_paths = sorted([
+        f"/pictures/{f}"
+        for f in files])
+    return templates.TemplateResponse(
+        "list_files.html", {"request": request, "files": files_paths}
+    )
 
 
 @app.get("/download/{picture}")
