@@ -1,0 +1,68 @@
+version: "3.8"
+services:
+
+  image_server:
+    image: image_server:latest
+    build:
+      dockerfile: ./dockerfiles/image_server/Dockerfile
+    volumes:
+      - ./pictures/uploaded_images/:/app/src/uploaded_images/:ro
+      - ./pictures/optimized_images:/app/src/optimized_images/
+    environment:
+      - ORIG_IMG_DIR=/app/src/uploaded_images
+      - OPT_IMG_DIR=/app/src/optimized_images
+      - MQTT_HOST=rabbitmq
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: always
+    networks:
+      - rabbitmq_net
+
+  web_api:
+    image: web_api:latest
+    build:
+      dockerfile: ./dockerfiles/web_api/Dockerfile
+    volumes:
+      - ./pictures/uploaded_images/:/app/src/uploaded_images/
+      - ./pictures/optimized_images:/app/src/optimized_images/:ro
+    environment:
+      - ORIG_IMG_DIR=/app/src/uploaded_images
+      - OPT_IMG_DIR=/app/src/optimized_images
+      - MQTT_HOST=rabbitmq
+      - API_HOST=0.0.0.0
+      - API_PORT=80
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    restart: always
+    networks:
+      - rabbitmq_net
+    ports:
+      - 127.0.0.1:80:80
+
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    ports: 
+      - "5671"
+      - "5672:5672"
+      - "15671:15671"
+      - "15672:15672"
+      - "25672:25672"
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq/
+    networks:
+      rabbitmq_net:
+        aliases:
+          - rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "list_queues"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+
+networks:
+  rabbitmq_net:
+    driver: bridge
