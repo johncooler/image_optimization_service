@@ -3,7 +3,7 @@ import json
 import os
 from typing import List
 
-from fastapi import FastAPI, HTTPException, Response, UploadFile
+from fastapi import FastAPI, HTTPException, Response, UploadFile, Query
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
@@ -43,7 +43,7 @@ app.mount(
 @app.post("/upload/")
 async def image_upload(
     files: List[UploadFile],
-    quality: List[int] = [100, 75, 50, 25]
+    quality: List[int] = Query(default=[100, 75, 50, 25])
 ):
     try:
         # We wanna use checksums of the file to
