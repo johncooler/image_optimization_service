@@ -10,13 +10,14 @@ ENV PIL_PROCESS_COUNT 8
 ENV MQTT_HOST rabbitmq
 
 
+COPY dockerfiles/web_api/requirements_web.txt ./
+RUN pip install -r requirements_web.txt
+
 COPY ./src ./src
 RUN rm /app/src/image_server/ -rf
 RUN mkdir -p /app/src/uploaded_images
 RUN mkdir -p /app/src/optimized_images
-COPY dockerfiles/web_api/requirements_web.txt ./
 
-RUN pip install -r requirements_web.txt
 
 
 ENV ORIG_IMG_DIR "/app/src/uploaded_images"

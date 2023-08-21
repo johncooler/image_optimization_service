@@ -77,6 +77,7 @@ async def image_upload(
         await file.close()
 
 
+# That function is just like shorthand to download optimized pictures
 @app.get("/optimized_photos/", response_class=HTMLResponse)
 async def listing(request: Request):
     files = os.listdir(optimized_images_dir)
