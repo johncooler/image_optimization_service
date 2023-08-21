@@ -28,7 +28,7 @@ app = FastAPI()
 
 
 @app.on_event("shutdown")
-async def close_sessions(notifier: Abs_mqtt_manager) -> None:
+async def close_sessions(notifier: Abs_mqtt_manager = notifier) -> None:
     # Would be executed before exit
     logger.info("Close MQTT session...")
     notifier.connection.close()
