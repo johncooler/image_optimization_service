@@ -2,19 +2,30 @@
 import pika
 
 from src.common_stuff.mqtt_base import BaseMQTTManager
+from src.common_stuff.interfaces import Abs_wa_mqtt_client
 from asyncio import Lock
 
 
-class MQTT_Client(BaseMQTTManager):
+class MQTT_Client(Abs_wa_mqtt_client, BaseMQTTManager):
+
     def __init__(
-            self,
-            input_channel_name,
-            output_channel_name,
-            mqtt_host) -> None:
+        self,
+            mqtt_host: str,
+            port: int = 5672,
+            retry_delay: int = 5,
+            heartbeat: int = 0,
+            blocked_connection_timeout: int = 60,
+            input_channel_name: str = None,
+            output_channel_name: str = None
+    ) -> None:
         super().__init__(
-            input_channel_name=input_channel_name,
-            output_channel_name=output_channel_name,
-            mqtt_host=mqtt_host)
+            mqtt_host,
+            port,
+            retry_delay,
+            heartbeat,
+            blocked_connection_timeout,
+            input_channel_name,
+            output_channel_name)
         self.open_channels()
         self.check_connection()
         self.lock = Lock()

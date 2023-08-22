@@ -44,6 +44,14 @@ class Abs_mqtt_manager(ABC):
         raise NotImplementedError
 
 
+# Different abstraction for Web API
+class Abs_wa_mqtt_client(Abs_mqtt_manager):
+
+    @abstractmethod
+    def push_to_queue(self, message: str) -> None:
+        raise NotImplementedError
+
+
 # Different abstraction for Image Server
 class Abs_is_mqtt_client(Abs_mqtt_manager):
 

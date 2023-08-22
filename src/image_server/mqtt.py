@@ -2,8 +2,10 @@ from typing import Callable
 
 from src.common_stuff.mqtt_base import BaseMQTTManager
 
+from src.common_stuff.interfaces import Abs_is_mqtt_client
 
-class IS_MQTT_client(BaseMQTTManager):
+
+class IS_MQTT_client(Abs_is_mqtt_client, BaseMQTTManager):
 
     def __init__(
         self,

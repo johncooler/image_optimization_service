@@ -11,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 
 from src import (ingoing_queue_name, mqtt_host, optimized_images_dir,
                  outgoing_queue_name, uploaded_images_dir)
-from src.common_stuff.interfaces import Abs_mqtt_manager
+from src.common_stuff.interfaces import Abs_wa_mqtt_client
 from src.common_stuff.transport import TransportMock as transport
 from src.web_api import logger
 from src.web_api.misc import save_file_to_disk
@@ -28,7 +28,7 @@ app = FastAPI()
 
 
 @app.on_event("shutdown")
-async def close_sessions(notifier: Abs_mqtt_manager = notifier) -> None:
+async def close_sessions(notifier: Abs_wa_mqtt_client = notifier) -> None:
     # Would be executed before exit
     logger.info("Close MQTT session...")
     notifier.connection.close()
@@ -64,6 +64,7 @@ async def image_upload(
                 "filename": new_name,
                 "ratios": quality
             }
+            # I leaved that method for S3 bucket use possibility 
             transport.upload(new_name)
             await notifier.push_to_queue(
                 message=json.dumps(message)
@@ -77,7 +78,8 @@ async def image_upload(
         await file.close()
 
 
-# That function is just like shorthand to download optimized pictures
+# That function is just like shorthand to download optimized pictures,
+# there shouldn't be such methods, it's frontend app responsibility
 @app.get("/optimized_photos/", response_class=HTMLResponse)
 async def listing(request: Request):
     files = os.listdir(optimized_images_dir)
