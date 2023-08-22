@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
+import asyncio
 import json
+
+import aio_pika
 
 from src.common_stuff.interfaces import (Abs_compressor, Abs_image_server,
                                          Abs_is_mqtt_client, Abs_transport)
@@ -22,23 +25,33 @@ class ImageServer(Abs_image_server):
         # That instance could be both mock
         # or working implementation
         self.transport = image_transport
-        # Set channels
-        self.mqtt_client.open_channels()
-        self.mqtt_client.check_connection()
+        # # Set channels
+        # self.mqtt_client.open_channels()
+        # self.mqtt_client.check_connection()
 
-    # Callback method that would be invoked on message income
-    def pull_from_queue(self, ch, method, properties, body) -> None:
-        decoded_body = json.loads(body.decode())
-        filename = decoded_body['filename']
-        ratios = decoded_body["ratios"]
-        self.transport.download(file_path=filename, url=filename)
-        self.logger.info(f"Received {filename} image")
-        self.compressor.compress(
-            filename=filename,
-            ratios=ratios
-        )
-        self.transport.upload(file_path=filename, url=filename)
+    async def pull_from_queue(
+        self,
+        message: aio_pika.abc.AbstractIncomingMessage,
+    ) -> None:
+        async with message.process():
+            decoded_body = message.body
+            decoded_body = json.loads(decoded_body)
+            filename = decoded_body['filename']
+            ratios = decoded_body["ratios"]
+            self.transport.download(file_path=filename, url=filename)
+            self.logger.info(f"Received {filename} image")
+            self.compressor.compress(
+                filename=filename,
+                ratios=ratios
+            )
 
     # Main entrypoint of class
-    def run(self) -> None:
-        self.mqtt_client.consume(self.pull_from_queue)
+    async def run(self) -> None:
+        await self.mqtt_client.open_channels()
+        await self.mqtt_client.consume(self.pull_from_queue)
+
+        try:
+            # Wait until terminate
+            await asyncio.Future()
+        finally:
+            await self.mqtt_client.connection.close()

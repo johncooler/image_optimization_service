@@ -1,10 +1,11 @@
 #!/usr/bin/env python
+import asyncio
 import json
 import os
 from typing import List
 
 from fastapi import (FastAPI, HTTPException, Query, Request, Response,
-                     UploadFile)
+                     UploadFile, WebSocket)
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -23,15 +24,19 @@ notifier = MQTT_Client(
     mqtt_host=mqtt_host
 )
 
-
 app = FastAPI()
+
+
+@app.on_event("startup")
+async def open_channels():
+    await notifier.open_channels()
 
 
 @app.on_event("shutdown")
 async def close_sessions(notifier: Abs_wa_mqtt_client = notifier) -> None:
     # Would be executed before exit
     logger.info("Close MQTT session...")
-    notifier.connection.close()
+    await notifier.connection.close()
 
 
 # Directory with user photos
@@ -46,6 +51,14 @@ app.mount(
     StaticFiles(directory=optimized_images_dir),
     name="static"
 )
+
+
+# @app.websocket("/status")
+# async def ws_get_status(websocket: WebSocket):
+#     await websocket.accept()
+#     while True:
+#         data = notifier.queue.get()
+#         websocket.send_text(data)
 
 
 @app.post("/upload/")
@@ -64,7 +77,7 @@ async def image_upload(
                 "filename": new_name,
                 "ratios": quality
             }
-            # I leaved that method for S3 bucket use possibility 
+            # I leaved that method for S3 bucket use possibility
             transport.upload(new_name)
             await notifier.push_to_queue(
                 message=json.dumps(message)

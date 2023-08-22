@@ -36,11 +36,7 @@ class Abs_mqtt_manager(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def open_channels(self) -> None:
-        raise NotImplementedError
-
-    @abstractmethod
-    def check_connection(self) -> None:
+    async def open_channels(self) -> None:
         raise NotImplementedError
 
 
@@ -48,7 +44,7 @@ class Abs_mqtt_manager(ABC):
 class Abs_wa_mqtt_client(Abs_mqtt_manager):
 
     @abstractmethod
-    def push_to_queue(self, message: str) -> None:
+    async def push_to_queue(self, message: str) -> None:
         raise NotImplementedError
 
 
@@ -56,7 +52,7 @@ class Abs_wa_mqtt_client(Abs_mqtt_manager):
 class Abs_is_mqtt_client(Abs_mqtt_manager):
 
     @abstractmethod
-    def consume(self, callback: Callable) -> None:
+    async def consume(self, callback: Callable) -> None:
         raise NotImplementedError
 
 
@@ -75,5 +71,5 @@ class Abs_image_server(ABC):
 
     # Entrypoint
     @abstractmethod
-    def run(self) -> None:
+    async def run(self) -> None:
         raise NotImplementedError

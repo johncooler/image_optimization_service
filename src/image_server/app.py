@@ -1,3 +1,4 @@
+import asyncio
 import os
 import sys
 
@@ -41,7 +42,7 @@ def app():
             image_transport=img_transport_mock
         )
         # Entrypoint
-        image_server.run()
+        asyncio.run(image_server.run())
     except KeyboardInterrupt:
         image_server.compressor.stop()
         try:

@@ -1,6 +1,7 @@
-from src.common_stuff.interfaces import Abs_transport
 import requests
+
 from src import optimized_images_dir
+from src.common_stuff.interfaces import Abs_transport
 
 
 # Just mocking for future implementations
@@ -23,7 +24,7 @@ class HTTP_Transport(Abs_transport):
         host: str = None,
         port: int = None,
         scheme: str = 'http://'
-        # download_path =
+        # method: str =
     ) -> None:
         self.base_url = f"{scheme}{host}:{port}"
         self.download_session = requests.Session()
