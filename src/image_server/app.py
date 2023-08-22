@@ -3,10 +3,10 @@ import sys
 
 from src import (ingoing_queue_name, mqtt_host, optimized_images_dir,
                  outgoing_queue_name, process_count, uploaded_images_dir)
-from src.common_stuff.mqtt_base import BaseMQTTManager
 from src.common_stuff.transport import TransportMock
 from src.image_server.compressors.pil import PIL_compressor
 from src.image_server.compressors.pil_mp import PIL_MP_compressor
+from src.image_server.mqtt import IS_MQTT_client
 from src.image_server.server import ImageServer
 
 
@@ -30,11 +30,11 @@ def app():
                 compressed_images_dir=optimized_images_dir
             )
         # Base MQTT client initialization
-        mqtt_client = BaseMQTTManager(
+        mqtt_client = IS_MQTT_client(
             input_channel_name=ingoing_queue_name,
             output_channel_name=outgoing_queue_name,
             mqtt_host=mqtt_host)
-        # Main server instance init
+        # Main server instance init, Facade pattern used
         image_server = ImageServer(
             compressor=compressor,
             mqtt_client=mqtt_client,

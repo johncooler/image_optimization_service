@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import List
+from typing import Callable, List
 
 
 # Abstract interface for image optimization class
@@ -7,51 +7,65 @@ class Abs_compressor(ABC):
 
     @abstractmethod
     def compress(filename: str, ratios: List[int]) -> None:
-        pass
+        raise NotImplementedError
 
     @abstractmethod
     def stop(self) -> None:
-        pass
+        raise NotImplementedError
 
 
 # Abstract inteface for image transport stuff
 class Abs_transport(ABC):
-    @abstractmethod
-    def download(filename: str) -> None:
-        pass
 
+    # Method to download file from resource
     @abstractmethod
-    def upload(filename: str, url: str) -> None:
-        pass
+    def download(self, file_path: str = None, url: str = None) -> None:
+        raise NotImplementedError
+
+    # Method to upload file to resource
+    @abstractmethod
+    def upload(self, file_path: str = None, url: str = None) -> None:
+        raise NotImplementedError
 
 
 # We need only one method to be declared
 # in abstract base class, other would be defined by childs
 class Abs_mqtt_manager(ABC):
     @abstractmethod
-    def __init__(self, *args, **kwargs) -> None:
-        pass
+    def __init__(self, mqtt_host: str, port: int) -> None:
+        raise NotImplementedError
 
     @abstractmethod
-    def open_channels(self, *args, **kwargs) -> None:
-        pass
+    def open_channels(self) -> None:
+        raise NotImplementedError
 
     @abstractmethod
     def check_connection(self) -> None:
-        pass
+        raise NotImplementedError
+
+
+# Different abstraction for Image Server
+class Abs_is_mqtt_client(Abs_mqtt_manager):
+
+    @abstractmethod
+    def consume(self, callback: Callable) -> None:
+        raise NotImplementedError
 
 
 # Base interface for image optimization server class
 class Abs_image_server(ABC):
 
+    # We gonna use Facade pattern to organize objects
+    # and to provide a simple point of access
     @abstractmethod
     def __init__(
             self,
             compressor: Abs_compressor,
             image_transport: Abs_transport,
-            mqtt_client: Abs_mqtt_manager) -> None:
-        pass
+            mqtt_client: Abs_is_mqtt_client) -> None:
+        raise NotImplementedError
 
+    # Entrypoint
     @abstractmethod
     def run(self) -> None:
-        pass
+        raise NotImplementedError

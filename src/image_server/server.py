@@ -2,7 +2,7 @@
 import json
 
 from src.common_stuff.interfaces import (Abs_compressor, Abs_image_server,
-                                         Abs_mqtt_manager, Abs_transport)
+                                         Abs_is_mqtt_client, Abs_transport)
 from src.common_stuff.logger import get_logger, setup_logger
 
 
@@ -12,7 +12,7 @@ class ImageServer(Abs_image_server):
         self,
         compressor: Abs_compressor,
         image_transport: Abs_transport,
-        mqtt_client: Abs_mqtt_manager,
+        mqtt_client: Abs_is_mqtt_client,
     ) -> None:
         self.logger = get_logger(self.__class__.__name__)
         setup_logger(logger=self.logger)
@@ -31,20 +31,14 @@ class ImageServer(Abs_image_server):
         decoded_body = json.loads(body.decode())
         filename = decoded_body['filename']
         ratios = decoded_body["ratios"]
-        self.transport.download(filename)
+        self.transport.download(file_path=filename, url=filename)
         self.logger.info(f"Received {filename} image")
         self.compressor.compress(
             filename=filename,
             ratios=ratios
         )
-        self.transport.upload(filename)
+        self.transport.upload(file_path=filename, url=filename)
 
     # Main entrypoint of class
     def run(self) -> None:
-        self.mqtt_client.inchannel.basic_consume(
-            queue=self.mqtt_client.input_channel_name,
-            on_message_callback=self.pull_from_queue,
-            auto_ack=True
-        )
-        self.logger.info('Waiting for messages. To exit press CTRL+C')
-        self.mqtt_client.inchannel.start_consuming()
+        self.mqtt_client.consume(self.pull_from_queue)

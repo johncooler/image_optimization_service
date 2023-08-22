@@ -1,8 +1,9 @@
 from typing import List
 
 from PIL import Image, UnidentifiedImageError
-from src.common_stuff.logger import get_logger, setup_logger
+
 from src.common_stuff.interfaces import Abs_compressor
+from src.common_stuff.logger import get_logger, setup_logger
 
 
 # Default implementation of image compressor
@@ -21,11 +22,13 @@ class PIL_compressor(Abs_compressor):
     def compress(self, filename: str, ratios: List[int]) -> None:
         try:
             for ratio in ratios:
-                file_path = f'{self.images_dir}/{filename}'
-                img = Image.open(file_path)
+                name = filename.split('.')[0]
+                ext = filename.split('.')[-1]
+                full_path = f'{self.images_dir}/{filename}'
+                img = Image.open(full_path)
                 img.save(
                     f'{self.compressed_images_dir}/'
-                    f'{filename[:-4]}_{ratio}.{filename[-3:]}',
+                    f'{name}_{ratio}.{ext}',
                     optimize=True,
                     quality=ratio
                 )
@@ -33,7 +36,6 @@ class PIL_compressor(Abs_compressor):
         except UnidentifiedImageError:
             self.logger.error("unknown file format.")
             pass
-    
+
     def stop(self):
         pass
-
